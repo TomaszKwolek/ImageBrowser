@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?scenebuilder-preview-i18n-resource ../bundle/base.properties?>
+<?scenebuilder-stylesheet ../css/standard.css?>
+<?import javafx.scene.media.*?>
+<?import javafx.scene.image.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="696.0" prefWidth="793.0" xmlns="http://javafx.com/javafx/8.0.66" xmlns:fx="http://javafx.com/fxml/1" fx:controller="image.browser.javafx.controller.BrowserController">
+   <children>
+      <ImageView fx:id="imageWindow" fitHeight="480.0" fitWidth="730.0" layoutX="32.0" layoutY="189.0" pickOnBounds="true" preserveRatio="true" />
+      <Button fx:id="loadFolderButton" layoutX="29.0" layoutY="21.0" mnemonicParsing="false" onAction="#loadFolderAction" text="%button.loadFolder" />
+      <ListView fx:id="fileList" layoutX="29.0" layoutY="61.0" onMouseClicked="#showPictureAction" prefHeight="111.0" prefWidth="740.0" />
+   </children>
+</Pane>
