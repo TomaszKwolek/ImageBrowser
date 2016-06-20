@@ -11,8 +11,16 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="696.0" prefWidth="793.0" xmlns="http://javafx.com/javafx/8.0.66" xmlns:fx="http://javafx.com/fxml/1" fx:controller="image.browser.javafx.controller.BrowserController">
    <children>
-      <ImageView fx:id="imageWindow" fitHeight="480.0" fitWidth="730.0" layoutX="32.0" layoutY="189.0" pickOnBounds="true" preserveRatio="true" />
       <Button fx:id="loadFolderButton" layoutX="29.0" layoutY="21.0" mnemonicParsing="false" onAction="#loadFolderAction" text="%button.loadFolder" />
-      <ListView fx:id="fileList" layoutX="29.0" layoutY="61.0" onMouseClicked="#showPictureAction" prefHeight="111.0" prefWidth="740.0" />
+      <ListView fx:id="fileList" layoutX="29.0" layoutY="61.0" onMouseClicked="#showPictureAction" prefHeight="111.0" prefWidth="735.0" />
+      <ScrollPane fx:id="imageScrollPane" layoutX="29.0" layoutY="187.0" pannable="true" prefHeight="445.0" prefWidth="735.0">
+         <content>
+            <ImageView fx:id="imageWindow" fitHeight="442.0" fitWidth="732.0" focusTraversable="true" pickOnBounds="true" preserveRatio="true" />
+         </content>
+      </ScrollPane>
+      <Button fx:id="previousButton" layoutX="29.0" layoutY="640.0" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" onAction="#previousButtonAction" prefHeight="40.0" prefWidth="40.0" />
+      <Button fx:id="nextButton" layoutX="724.0" layoutY="640.0" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" onAction="#nextButtonAction" prefHeight="40.0" prefWidth="40.0" />
+      <Button fx:id="playButton" layoutX="367.0" layoutY="640.0" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" onAction="#playButtonAction" prefHeight="40.0" prefWidth="40.0" />
+      <Button fx:id="pauseButton" layoutX="367.0" layoutY="640.0" maxHeight="40.0" maxWidth="40.0" minHeight="40.0" minWidth="40.0" mnemonicParsing="false" onAction="#pauseButtonAction" prefHeight="40.0" prefWidth="40.0" />
    </children>
 </Pane>
