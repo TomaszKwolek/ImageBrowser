@@ -8,15 +8,17 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import image.browser.javafx.model.State;
+import image.browser.javafx.file.loader.FileLoader;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -24,8 +26,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.Stage;
 
 public class BrowserController {
 
@@ -51,10 +51,15 @@ public class BrowserController {
 	private ScrollPane imageScrollPane;
 
 	final DoubleProperty zoomProperty = new SimpleDoubleProperty(200);
+
 	private List<File> imageFiles = new ArrayList<>();
 	private int currentImageIndex = 0;
+
 	private Timer timerSlideShow = new Timer();
 	private TimerTask taskSlideShow = null;
+	
+	private Image selectedImage = null;
+
 	private ImageView nextButtonIcon = new ImageView(
 			new Image(getClass().getResourceAsStream("/image/browser/javafx/icons/next.png")));
 	private ImageView previousButtonIcon = new ImageView(
@@ -72,17 +77,17 @@ public class BrowserController {
 
 		setButtonsVisibility(currentImageIndex);
 
-		nextButtonIcon.setFitHeight(35);
-		previousButtonIcon.setFitHeight(35);
-		nextButtonIcon.setFitWidth(35);
-		previousButtonIcon.setFitWidth(35);
-		playButtonIcon.setFitHeight(35);
-		pauseButtonIcon.setFitHeight(35);
-		playButtonIcon.setFitWidth(35);
-		pauseButtonIcon.setFitWidth(35);
+		nextButtonIcon.setFitHeight(55);
+		nextButtonIcon.setFitWidth(55);
 		nextButton.setGraphic(nextButtonIcon);
+		previousButtonIcon.setFitHeight(55);
+		previousButtonIcon.setFitWidth(55);
 		previousButton.setGraphic(previousButtonIcon);
+		playButtonIcon.setFitHeight(55);
+		playButtonIcon.setFitWidth(55);
 		playButton.setGraphic(playButtonIcon);
+		pauseButtonIcon.setFitHeight(55);
+		pauseButtonIcon.setFitWidth(55);
 		pauseButton.setGraphic(pauseButtonIcon);
 
 		zoomProperty.addListener(new InvalidationListener() {
@@ -91,7 +96,6 @@ public class BrowserController {
 			public void invalidated(Observable observable) {
 				imageWindow.setFitWidth(zoomProperty.get() * 4);
 				imageWindow.setFitHeight(zoomProperty.get() * 3);
-
 			}
 		});
 
@@ -107,68 +111,42 @@ public class BrowserController {
 		});
 
 		imageScrollPane.setContent(imageWindow);
-	}
 
-	@SuppressWarnings("unused")
-	private String getInternationalizedText(State state) {
-		return resources.getString("state." + state.name());
 	}
 
 	@FXML
 	private void loadFolderAction() {
-		imageFiles = getFiles();
+		imageFiles = FileLoader.getFiles(loadFolderButton.getScene().getWindow());
 		showFiles(imageFiles);
 		currentImageIndex = 0;
-		String absolutePath = "file:" + imageFiles.get(currentImageIndex).getAbsolutePath();
-		Image selectedImage = new Image(absolutePath);
-		imageWindow.setImage(selectedImage);
 		setButtonsVisibility(currentImageIndex);
+		showImage(currentImageIndex);
+		fileList.scrollTo(currentImageIndex);
 	}
 
 	@FXML
 	private void previousButtonAction() {
-		String absolutePath = "";
 		if (currentImageIndex > 0) {
-			absolutePath = "file:" + imageFiles.get(currentImageIndex - 1).getAbsolutePath();
-			currentImageIndex = currentImageIndex - 1;
+			currentImageIndex--;
 			setButtonsVisibility(currentImageIndex);
+			showImage(currentImageIndex);
+			fileList.scrollTo(currentImageIndex);
 		}
-		Image selectedImage = new Image(absolutePath);
-		imageWindow.setImage(selectedImage);
 	}
 
 	@FXML
 	private void nextButtonAction() {
-		String absolutePath = "";
 		if (currentImageIndex < imageFiles.size() - 1) {
-			absolutePath = "file:" + imageFiles.get(currentImageIndex + 1).getAbsolutePath();
-			currentImageIndex = currentImageIndex + 1;
+			currentImageIndex++;
 			setButtonsVisibility(currentImageIndex);
+			showImage(currentImageIndex);
+			fileList.scrollTo(currentImageIndex);
 		}
-		Image selectedImage = new Image(absolutePath);
-		imageWindow.setImage(selectedImage);
 	}
 
 	@FXML
 	private void playButtonAction() {
-		disableNextPreviousButtons();
-
-		Timer timer = new Timer();
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				currentImageIndex++;
-				if (currentImageIndex >= imageFiles.size()) {
-					currentImageIndex = 0;
-				}
-				String absolutePath = "file:" + imageFiles.get(currentImageIndex).getAbsolutePath();
-				Image selectedImage = new Image(absolutePath);
-				imageWindow.setImage(selectedImage);
-			};
-		};
-		timer.schedule(task, 1000, 2000);
-		timerSlideShow = timer;
-		taskSlideShow = task;
+		startSlideShow();
 		playButton.setVisible(false);
 		pauseButton.setVisible(true);
 	}
@@ -176,36 +154,43 @@ public class BrowserController {
 	@FXML
 	private void pauseButtonAction() {
 		setButtonsVisibility(currentImageIndex);
-		System.out.println(currentImageIndex);
 		timerSlideShow.cancel();
-		taskSlideShow.cancel();
+		if (taskSlideShow != null) {
+			taskSlideShow.cancel();
+		}
 		playButton.setVisible(true);
 		pauseButton.setVisible(false);
+		fileList.scrollTo(currentImageIndex);
 	}
 
 	@FXML
 	private void showPictureAction() {
-		String absolutePath = "";
-		for (int i = 0; i < imageFiles.size(); i++) {
-			if (fileList.getSelectionModel().getSelectedItem().equals(imageFiles.get(i).getName())) {
-				absolutePath = "file:" + imageFiles.get(i).getAbsolutePath();
-				currentImageIndex = i;
-				setButtonsVisibility(currentImageIndex);
-			}
-		}
-		Image selectedImage = new Image(absolutePath);
-		imageWindow.setImage(selectedImage);
+		currentImageIndex = fileList.getSelectionModel().getSelectedIndex();
+		setButtonsVisibility(currentImageIndex);
+		showImage(currentImageIndex);
 	}
 
-	private void setButtonsVisibility(int i) {
+	private void showImage(int imageNumber) {
+		if (!imageFiles.isEmpty() && imageFiles != null) {
+			String absolutePath = "file:" + imageFiles.get(imageNumber).getAbsolutePath();
+			selectedImage = new Image(absolutePath);
+			imageWindow.setImage(selectedImage);
+			imageWindow.setFitHeight(imageScrollPane.getHeight() - 2);
+			imageWindow.setFitWidth(imageScrollPane.getWidth() - 2);
+			imageWindow.setPreserveRatio(true);
+			fileList.getSelectionModel().select(imageNumber);
+		}
+	}
+
+	private void setButtonsVisibility(int index) {
 		nextButton.setVisible(true);
 		previousButton.setVisible(true);
 		playButton.setVisible(true);
-		if (i == imageFiles.size() - 1) {
+		if (index == imageFiles.size() - 1) {
 			nextButton.setVisible(false);
 			previousButton.setVisible(true);
 		}
-		if (i == 0) {
+		if (index == 0) {
 			previousButton.setVisible(false);
 			nextButton.setVisible(true);
 		}
@@ -217,42 +202,34 @@ public class BrowserController {
 		}
 	}
 
-	private void disableNextPreviousButtons() {
-		previousButton.setVisible(false);
-		nextButton.setVisible(false);
-	}
-
-	private List<File> getFiles() {
-		Stage stage = new Stage();
-		DirectoryChooser directoryChooser = new DirectoryChooser();
-		directoryChooser.setTitle("Open folder");
-		File folder = directoryChooser.showDialog(stage);
-		File[] files = folder.listFiles();
-		List<File> images = new ArrayList<File>();
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].isFile()) {
-				String file = files[i].getName();
-				if (file.endsWith(".jpg") || file.endsWith(".JPG") || file.endsWith(".jpeg") || file.endsWith(".JPEG")
-						|| file.endsWith(".tiff") || file.endsWith(".TIFF") || file.endsWith(".tif")
-						|| file.endsWith(".TIF") || file.endsWith(".gif") || file.endsWith(".GIF")
-						|| file.endsWith(".jpg") || file.endsWith(".JPG") || file.endsWith(".png")
-						|| file.endsWith(".png")) {
-					images.add(files[i]);
-					System.out.println(files[i].getName());
+	private void startSlideShow() {
+		Timer timer = new Timer();
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				currentImageIndex++;
+				if (currentImageIndex >= imageFiles.size()) {
+					currentImageIndex = 0;
 				}
-			}
-		}
-		return images;
+				setButtonsVisibility(currentImageIndex);
+				showImage(currentImageIndex);
+			};
+		};
+		timer.schedule(task, 1000, 2000);
+		timerSlideShow = timer;
+		taskSlideShow = task;
 	}
 
 	private void showFiles(List<File> files) {
+
+		loadFolderButton.getParent().setCursor(Cursor.WAIT);
+
 		ObservableList<String> items = FXCollections.observableArrayList();
 		for (File file : files) {
 			items.add(file.getName());
 		}
 
 		fileList.setItems(items);
-
 		fileList.setCellFactory(param -> new ListCell<String>() {
 			private ImageView imageView = new ImageView();
 
@@ -275,6 +252,7 @@ public class BrowserController {
 			}
 		});
 
+		loadFolderButton.getParent().setCursor(Cursor.DEFAULT);
 	}
 
 }
