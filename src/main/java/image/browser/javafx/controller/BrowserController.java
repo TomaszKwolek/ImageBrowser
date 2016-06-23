@@ -77,6 +77,7 @@ public class BrowserController {
 
 		setButtonsVisibility(currentImageIndex);
 
+		// REV: moznaby to zrobic w FXMLu
 		nextButtonIcon.setFitHeight(55);
 		nextButtonIcon.setFitWidth(55);
 		nextButton.setGraphic(nextButtonIcon);
@@ -90,6 +91,7 @@ public class BrowserController {
 		pauseButtonIcon.setFitWidth(55);
 		pauseButton.setGraphic(pauseButtonIcon);
 
+		// REV: dlaczego InvalidationListener, a nie ChangeListener?
 		zoomProperty.addListener(new InvalidationListener() {
 
 			@Override
@@ -99,6 +101,7 @@ public class BrowserController {
 			}
 		});
 
+		// REV: Dlaczego EventFilter, a nie EventHandler?
 		imageWindow.addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {
 			@Override
 			public void handle(ScrollEvent event) {
@@ -147,6 +150,7 @@ public class BrowserController {
 	@FXML
 	private void playButtonAction() {
 		startSlideShow();
+		// REV: bindy
 		playButton.setVisible(false);
 		pauseButton.setVisible(true);
 	}
@@ -158,6 +162,7 @@ public class BrowserController {
 		if (taskSlideShow != null) {
 			taskSlideShow.cancel();
 		}
+		// REV: j.w.
 		playButton.setVisible(true);
 		pauseButton.setVisible(false);
 		fileList.scrollTo(currentImageIndex);
@@ -165,6 +170,7 @@ public class BrowserController {
 
 	@FXML
 	private void showPictureAction() {
+		// REV: lepiej zrobic to na listenerze dla selectedItem
 		currentImageIndex = fileList.getSelectionModel().getSelectedIndex();
 		setButtonsVisibility(currentImageIndex);
 		showImage(currentImageIndex);
@@ -183,6 +189,7 @@ public class BrowserController {
 	}
 
 	private void setButtonsVisibility(int index) {
+		// REV: lepiej zrobic to bindami
 		nextButton.setVisible(true);
 		previousButton.setVisible(true);
 		playButton.setVisible(true);
@@ -211,6 +218,7 @@ public class BrowserController {
 				if (currentImageIndex >= imageFiles.size()) {
 					currentImageIndex = 0;
 				}
+				// REV: zmiany UI powinny byc robione w watku JavaFX
 				setButtonsVisibility(currentImageIndex);
 				showImage(currentImageIndex);
 			};
@@ -230,6 +238,7 @@ public class BrowserController {
 		}
 
 		fileList.setItems(items);
+		// REV: fileList moglby wyswietlac obiekty typu File
 		fileList.setCellFactory(param -> new ListCell<String>() {
 			private ImageView imageView = new ImageView();
 

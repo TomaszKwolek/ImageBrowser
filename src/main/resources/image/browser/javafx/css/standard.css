@@ -4,6 +4,7 @@
 
 
 /* Select elements by their CSS class ("styleClass" attribute) */
+/* REV: nie ma takich elementow w FXMLu */
 .formTitle {
 	-fx-font-size: 25.0px;
 	-fx-font-weight: bold;
